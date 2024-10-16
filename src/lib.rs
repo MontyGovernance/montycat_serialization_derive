@@ -17,14 +17,22 @@ pub fn binary_convert_derive(input: TokenStream) -> TokenStream {
 
         impl BinaryConvert for #name
         where
-            #name: Serialize + for<'de> serde::Deserialize<'de>,
+            #name: Serialize + for<'de> serde::Deserialize<'de> + Default,
         {
             fn convert_to_bytes(&self) -> Vec<u8> {
-                rmp_serde::to_vec(self).expect("Failed to convert to bytes")
+                if let Ok(vector) = rmp_serde::to_vec(self) {
+                    vector
+                } else {
+                    Vec::new()
+                }
             }
 
             fn convert_from_bytes(bytes: &[u8]) -> Self {
-                rmp_serde::from_slice(bytes).expect("Failed to convert from bytes")
+                if let Ok(structure) = rmp_serde::from_slice(bytes) {
+                    structure
+                } else {
+                    Self::default()
+                }
             }
         }
 
