@@ -3,7 +3,7 @@ name = "montycat_serialization_derive"
 version = "0.1.2"
 edition = "2021"
 authors = ["MontyGovernance"]
-description = "A derive trait for custom rmp serialization/deserialization."
+description = "A derive trait for custom compact serialization/deserialization."
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 
