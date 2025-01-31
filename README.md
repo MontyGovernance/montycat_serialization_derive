@@ -24,7 +24,7 @@ Add the crate to your project's dependencies in `Cargo.toml`:
 
 ```toml
 [dependencies]
-montycat_serialization_derive = "0.1.4"
+montycat_serialization_derive = "0.1.5" 
 serde = { version = "1.0", features = ["derive"] }
 rmp-serde = "1.3.0"
 ```
