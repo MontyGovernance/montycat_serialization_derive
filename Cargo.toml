@@ -1,6 +1,6 @@
 [package]
 name = "montycat_serialization_derive"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 authors = ["MontyGovernance"]
 description = "A derive trait for custom compact serialization/deserialization."

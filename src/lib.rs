@@ -30,12 +30,15 @@ pub fn binary_convert_derive(input: TokenStream) -> TokenStream {
     // Generate the implementation of the `BinaryConvert` trait for the struct
     let gen = quote! {
         // Define the BinaryConvert trait
-        pub trait BinaryConvert: Serialize {
+        pub trait BinaryConvert: Serialize + for<'de> serde::Deserialize<'de> + Default + Sized {
             // Method to convert the struct into a byte vector
             fn convert_to_bytes(&self) -> Vec<u8>;
-
             // Method to convert a byte slice back into the struct
             fn convert_from_bytes(bytes: &[u8]) -> Self;
+            // Method to convert a byte slice back into the struct
+            fn convert_from_bytes_populate_option(bytes: &[u8]) -> Option<Self>;
+            // Method to convert a byte slice back into the struct
+            fn convert_to_bytes_populate_option(&self) -> Option<Vec<u8>>;
         }
 
         // Implement the BinaryConvert trait for the specific struct (identified by `#name`)
@@ -62,6 +65,17 @@ pub fn binary_convert_derive(input: TokenStream) -> TokenStream {
                     Self::default() // Return the default value of the struct if deserialization failed
                 }
             }
+
+            fn convert_from_bytes_populate_option(bytes: &[u8]) -> Option<Self> {
+                // Attempt to deserialize the byte slice into the struct.
+                rmp_serde::from_slice(bytes).ok()
+            }
+
+            fn convert_to_bytes_populate_option(&self) -> Option<Vec<u8>> {
+                // Attempt to serialize the struct into a MessagePack byte vector.
+                rmp_serde::to_vec(self).ok()
+            }
+
         }
     };
 

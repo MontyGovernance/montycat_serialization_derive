@@ -65,6 +65,23 @@ fn main() {
     // Verify correctness
     assert_eq!(original.id, deserialized.id);
     assert_eq!(original.name, deserialized.name);
+
+    let new_struct = SomeNewStruct {
+        id: 99,
+        name: "Eugene".to_string()
+    };
+
+    if let Some(bytes) = new_struct.convert_to_bytes_populate_option() {
+        // operate with bytes in isolated scope
+        if let Some(new_struct) = SomeNewStruct::convert_from_bytes_populate_option(&bytes) {
+            // operate with struct in isolated scope
+        } else {
+            // None case
+        }
+    } else {
+        // None case
+    }
+
 }
 ```
 
@@ -72,6 +89,9 @@ fn main() {
 
 Serialization (convert_to_bytes): If serialization fails, an empty Vec<u8> is returned.
 Deserialization (convert_from_bytes): If deserialization fails, the method returns a default instance of the struct. For this to work, the struct must implement the Default trait.
+
+Use convert_to_bytes_populate_option() and convert_from_bytes_populate_option() to populate Some() and None. Use all the 
+unwrapping Rust methods ( ?, unwrap(), is_none(), is_some(), and so on... ) to uncover value or run check.
 
 ## Notes
 
