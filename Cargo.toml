@@ -13,6 +13,7 @@ rmp-serde = "1.3.0"
 proc-macro2 = "1.0.93"
 syn = "2.0.96"
 quote = "1.0.38"
+hashbrown = { version = "0.16.0", features = ["serde"] }
 
 [lib]
 proc-macro = true

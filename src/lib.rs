@@ -2,7 +2,7 @@
 extern crate proc_macro;
 use proc_macro::TokenStream; // TokenStream is used for passing input/output to/from the macro
 use quote::quote; // Quote is used to generate Rust code as tokens
-use syn::{parse_macro_input, DeriveInput, Ident}; // Syn crate for parsing Rust syntax
+use syn::{parse_macro_input, DeriveInput, Ident, Fields, Data}; // Syn crate for parsing Rust syntax
 
 /// This procedural macro derives a trait called `BinaryConvert` for the struct
 /// it's applied to. The `BinaryConvert` trait provides methods to convert a
@@ -13,17 +13,16 @@ use syn::{parse_macro_input, DeriveInput, Ident}; // Syn crate for parsing Rust 
 /// The trait defines two methods:
 /// - `convert_to_bytes(&self) -> Vec<u8>`: Converts the struct into a byte vector.
 /// - `convert_from_bytes(bytes: &[u8]) -> Self`: Converts a byte slice back into the struct.
-/// 
+///
 /// The implementation uses `rmp_serde` (a MessagePack serializer/deserializer) for binary
 /// serialization and deserialization of the struct. The struct must also implement `Serialize`
 /// and `Deserialize` to work with `rmp_serde` correctly.
 
-#[proc_macro_derive(BinaryConvert)] 
+#[proc_macro_derive(BinaryConvert)]
 pub fn binary_convert_derive(input: TokenStream) -> TokenStream {
     // Parse the input tokens into a DeriveInput, which represents the structure
     // of the item (e.g., struct, enum) to which the macro is being applied.
     let ast: DeriveInput = parse_macro_input!(input as DeriveInput);
-    
     // Extract the identifier (name) of the struct or enum from the parsed input.
     let name: Ident = ast.ident;
 
@@ -80,5 +79,67 @@ pub fn binary_convert_derive(input: TokenStream) -> TokenStream {
     };
 
     // Return the generated code as a TokenStream, which will be inserted into the user's code.
+    gen.into()
+}
+
+#[proc_macro_derive(RuntimeSchema)]
+pub fn montycat_schema_derive(input: TokenStream) -> TokenStream {
+    let ast: DeriveInput = parse_macro_input!(input as DeriveInput);
+    let name = &ast.ident;
+
+    let mut matches = Vec::new();
+    let mut field_info = Vec::new();
+    let mut schema_inserts = Vec::new();
+
+    if let Data::Struct(data_struct) = &ast.data {
+        if let Fields::Named(fields_named) = &data_struct.fields {
+            for field in fields_named.named.iter() {
+                let ident = &field.ident;
+                let ty = &field.ty;
+
+                // For collecting pointer/timestamp matches
+                matches.push(quote! {
+                    if std::any::TypeId::of::<#ty>() == std::any::TypeId::of::<Pointer>() {
+                        result.push((stringify!(#ident), "Pointer"));
+                    }
+                    if std::any::TypeId::of::<#ty>() == std::any::TypeId::of::<Timestamp>() {
+                        result.push((stringify!(#ident), "Timestamp"));
+                    }
+                });
+
+                // For collecting all field names and types
+                field_info.push(quote! {
+                    (stringify!(#ident), stringify!(#ty))
+                });
+
+                schema_inserts.push(quote! {
+                    map.insert(stringify!(#ident), stringify!(#ty));
+                });
+
+            }
+        }
+    }
+
+    let gen = quote! {
+        impl RuntimeSchema for #name {
+            fn pointer_and_timestamp_fields(&self) -> Vec<(&'static str, &'static str)> {
+                let mut result = Vec::new();
+                #(#matches)*
+                result
+            }
+
+            fn field_names_and_types(&self) -> Vec<(&'static str, &'static str)> {
+                vec![#(#field_info),*]
+            }
+
+            fn schema_params() -> (HashMap<&'static str, &'static str>, &'static str) {
+                let mut map = std::collections::HashMap::new();
+                #(#schema_inserts)*
+                (map, stringify!(#name))
+            }
+
+        }
+    };
+
     gen.into()
 }
