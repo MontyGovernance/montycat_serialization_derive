@@ -24,9 +24,9 @@ Add the crate to your project's dependencies in `Cargo.toml`:
 
 ```toml
 [dependencies]
-montycat_serialization_derive = "0.1.5" 
+montycat_serialization_derive = "0.1.6" 
 serde = { version = "1.0", features = ["derive"] }
-rmp-serde = "1.3.0"
+rmp-serde = "1"
 ```
 
 ## Usage
@@ -97,3 +97,42 @@ unwrapping Rust methods ( ?, unwrap(), is_none(), is_some(), and so on... ) to u
 
 The library uses the MessagePack format, making it compact and efficient for binary data storage or transmission.
 For additional control over serialization, you can use serde attributes (e.g., #[serde(rename = "...")], #[serde(skip)]).
+
+## 🧩 Runtime Schema Introspection
+
+You can also derive a runtime schema for your structs using the RuntimeSchema macro.
+
+```rust
+use montycat_serialization_derive::RuntimeSchema;
+
+#[derive(RuntimeSchema, Default)]
+struct User {
+    id: Pointer,
+    created_at: Timestamp,
+    username: String,
+}
+```
+
+## This provides several REFLECTION-LIKE utilities Rust as a compiled language lacks:
+
+```rust
+
+let user = User::default();
+
+// 1. Get pointer and timestamp fields
+let pts = user.pointer_and_timestamp_fields();
+// -> [("id", "Pointer"), ("created_at", "Timestamp")]
+
+// 2. Get all field names and types
+let all_fields = user.field_names_and_types();
+// -> [("id", "Pointer"), ("created_at", "Timestamp"), ("username", "String")]
+
+// 3. Get schema parameters (HashMap + struct name)
+let (schema_map, struct_name) = User::schema_params();
+```
+## 🧠 Design Philosophy
+
+### Montycat’s derive macros are designed to:
+- Maximize performance and compactness using binary formats.
+- Offer type-safe runtime reflection for schema-driven systems.
+- Serve as foundational tools for MontyCat’s NoSQL database and its data mesh infrastructure.

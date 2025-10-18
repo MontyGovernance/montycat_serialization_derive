@@ -1,18 +1,23 @@
 [package]
 name = "montycat_serialization_derive"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 authors = ["MontyGovernance"]
-description = "A derive trait for custom compact serialization/deserialization."
+description = "A derive trait for custom compact serialization/deserialization. Provides Runtime schema methods. Derives and identifies struct's fields and their types."
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 
+documentation = "https://docs.rs/montycat_serialization_derive"
+homepage = "https://montygovernance.com"
+keywords = ["serialization", "derive", "rust", "schema", "database"]
+categories = ["development-tools", "encoding", "database"]
+
 [dependencies]
-serde = { version = "1.0.217", features = ["derive"] }
+serde = { version = "1.0.228", features = ["derive"] }
 rmp-serde = "1.3.0"
-proc-macro2 = "1.0.93"
-syn = "2.0.96"
-quote = "1.0.38"
+proc-macro2 = "1.0.101"
+syn = "2.0.106"
+quote = "1.0.41"
 hashbrown = { version = "0.16.0", features = ["serde"] }
 
 [lib]
