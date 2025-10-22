@@ -1,5 +1,11 @@
 # 🦀 Montycat Serialization Derive
 
+[![Crates.io](https://img.shields.io/crates/v/montycat_serialization_derive.svg)](https://crates.io/crates/montycat_serialization_derive)
+[![Docs.rs](https://img.shields.io/docsrs/montycat_serialization_derive)](https://docs.rs/montycat_serialization_derive)
+[![crates.io downloads](https://img.shields.io/crates/d/montycat_serialization_derive)](https://crates.io/crates/montycat_serialization_derive)
+[![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20%7C%20Apache--2.0-blue.svg)](LICENSE)
+[![Rust](https://img.shields.io/badge/rust-1.70+-lightgray.svg)](https://www.rust-lang.org/)
+
 `montycat_serialization_derive` is a procedural macro library for seamless and efficient binary serialization and runtime schema introspection in Rust.
 Built on top of `serde` and `rmp-serde`, it provides automatic MessagePack-based serialization and deserialization, as well as reflection-like runtime type checking with `RuntimeSchema`.
 
