@@ -140,7 +140,7 @@ Montycat’s derive macros are built to:
 
 ## See also:
 
-Montycat Rust Client: 
-Montycat Engine: Explore the full ecosystem and architecture at https://montygovernance.com
+- Montycat Rust Client: 
+- Explore the full ecosystem and architecture at https://montygovernance.com
 
 
