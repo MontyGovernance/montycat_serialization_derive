@@ -149,7 +149,7 @@ let (schema_map, struct_name) = User::schema_params();
 Montycat’s derive macros are built to:
 - Maximize performance and compactness with binary serialization.
 - Provide type-safe runtime reflection for schema-driven systems.
-- Serve as the foundation for the MontyCat NoSQL database implementing data mesh infrastructure.
+- Serve as the foundation for the Montycat NoSQL database implementing data mesh infrastructure.
 
 ## See also:
 
