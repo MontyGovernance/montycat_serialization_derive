@@ -113,6 +113,13 @@ Use the RuntimeSchema macro to inspect struct metadata at runtime:
 ```rust
 use montycat_serialization_derive::RuntimeSchema;
 
+// Copy-paste dummy trait only if you do not use Montycat engine
+pub trait RuntimeSchema {
+    fn pointer_and_timestamp_fields(&self) -> Vec<(&'static str, &'static str)>;
+    fn field_names_and_types(&self) -> Vec<(&'static str, &'static str)>;
+    fn schema_params() -> (std::collections::HashMap<&'static str, &'static str>, &'static str);
+}
+
 #[derive(RuntimeSchema, Default)]
 struct User {
     id: String,
