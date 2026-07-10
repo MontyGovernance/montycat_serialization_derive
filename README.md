@@ -32,7 +32,7 @@ Add the crate to your project's dependencies in `Cargo.toml`:
 
 ```toml
 [dependencies]
-montycat_serialization_derive = "0.1.6"
+montycat_serialization_derive = "0.1.7"
 serde = { version = "1.0", features = ["derive"] }
 rmp-serde = "1"
 ```
@@ -108,19 +108,42 @@ For additional control over serialization, you can use serde attributes (e.g., #
 
 ## Usage RuntimeSchema Introspection
 
-Use the RuntimeSchema macro to inspect struct metadata at runtime:
+Use the `RuntimeSchema` macro to inspect struct metadata at runtime. The generated code
+refers to the `RuntimeSchema` trait and the `Pointer` / `Timestamp` types through the
+**`montycat`** crate by default (`::montycat::…`), so when you use the
+[`montycat`](https://crates.io/crates/montycat) client no extra setup is needed — just derive:
+
+```rust
+use montycat::RuntimeSchema; // re-exported by the montycat client
+
+#[derive(RuntimeSchema, Default)]
+struct User {
+    id: String,
+    created_at: u32,
+    username: String,
+}
+```
+
+### Standalone use (without the `montycat` crate)
+
+If you use this derive on its own, point it at your own definitions with
+`#[montycat(crate = "…")]` (use `"crate"` for items defined in your crate root) and provide
+a `RuntimeSchema` trait plus `Pointer` / `Timestamp` types (the derive references them for
+field-type detection):
 
 ```rust
 use montycat_serialization_derive::RuntimeSchema;
 
-// Copy-paste dummy trait only if you do not use Montycat engine
 pub trait RuntimeSchema {
     fn pointer_and_timestamp_fields(&self) -> Vec<(&'static str, &'static str)>;
     fn field_names_and_types(&self) -> Vec<(&'static str, &'static str)>;
     fn schema_params() -> (std::collections::HashMap<&'static str, &'static str>, &'static str);
 }
+pub struct Pointer(pub u64);
+pub struct Timestamp(pub u64);
 
 #[derive(RuntimeSchema, Default)]
+#[montycat(crate = "crate")] // resolve RuntimeSchema/Pointer/Timestamp from this crate
 struct User {
     id: String,
     created_at: u32,

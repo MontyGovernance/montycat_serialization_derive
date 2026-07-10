@@ -131,10 +131,39 @@ pub fn binary_convert_derive(input: TokenStream) -> TokenStream {
 ///
 /// The above will give you a HashMap of field names to types and the struct name.
 ///
-#[proc_macro_derive(RuntimeSchema)]
+/// Path used to reference the `montycat` crate's items (`RuntimeSchema`,
+/// `Pointer`, `Timestamp`) in the generated code. Defaults to `::montycat`, so
+/// consumers of the `montycat` crate need no extra imports. Override with
+/// `#[montycat(crate = "path")]` — this crate's own tests pass
+/// `#[montycat(crate = "crate")]` because they define those types locally.
+fn resolve_crate_path(attrs: &[syn::Attribute]) -> proc_macro2::TokenStream {
+    for attr in attrs {
+        if attr.path().is_ident("montycat") {
+            let mut found: Option<proc_macro2::TokenStream> = None;
+            let _ = attr.parse_nested_meta(|meta| {
+                if meta.path.is_ident("crate") {
+                    let lit: syn::LitStr = meta.value()?.parse()?;
+                    found = Some(
+                        lit.value()
+                            .parse()
+                            .map_err(|_| meta.error("invalid `crate` path"))?,
+                    );
+                }
+                Ok(())
+            });
+            if let Some(path) = found {
+                return path;
+            }
+        }
+    }
+    quote!(::montycat)
+}
+
+#[proc_macro_derive(RuntimeSchema, attributes(montycat))]
 pub fn montycat_schema_derive(input: TokenStream) -> TokenStream {
     let ast: DeriveInput = parse_macro_input!(input as DeriveInput);
     let name = &ast.ident;
+    let krate = resolve_crate_path(&ast.attrs);
 
     let mut matches = Vec::new();
     let mut field_info = Vec::new();
@@ -147,10 +176,10 @@ pub fn montycat_schema_derive(input: TokenStream) -> TokenStream {
                 let ty = &field.ty;
 
                 matches.push(quote! {
-                    if std::any::TypeId::of::<#ty>() == std::any::TypeId::of::<Pointer>() {
+                    if std::any::TypeId::of::<#ty>() == std::any::TypeId::of::<#krate::Pointer>() {
                         result.push((stringify!(#ident), "Pointer"));
                     }
-                    if std::any::TypeId::of::<#ty>() == std::any::TypeId::of::<Timestamp>() {
+                    if std::any::TypeId::of::<#ty>() == std::any::TypeId::of::<#krate::Timestamp>() {
                         result.push((stringify!(#ident), "Timestamp"));
                     }
                 });
@@ -168,7 +197,7 @@ pub fn montycat_schema_derive(input: TokenStream) -> TokenStream {
     }
 
     let gen = quote! {
-        impl RuntimeSchema for #name {
+        impl #krate::RuntimeSchema for #name {
             fn pointer_and_timestamp_fields(&self) -> Vec<(&'static str, &'static str)> {
                 let mut result = Vec::new();
                 #(#matches)*
@@ -179,8 +208,8 @@ pub fn montycat_schema_derive(input: TokenStream) -> TokenStream {
                 vec![#(#field_info),*]
             }
 
-            fn schema_params() -> (HashMap<&'static str, &'static str>, &'static str) {
-                let mut map = std::collections::HashMap::new();
+            fn schema_params() -> (::std::collections::HashMap<&'static str, &'static str>, &'static str) {
+                let mut map = ::std::collections::HashMap::new();
                 #(#schema_inserts)*
                 (map, stringify!(#name))
             }
