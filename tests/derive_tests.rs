@@ -1,6 +1,5 @@
 use montycat_serialization_derive::{BinaryConvert, RuntimeSchema};
 use serde::{Serialize, Deserialize};
-use std::collections::HashMap;
 
 // Dummy trait
 pub trait RuntimeSchema {
@@ -16,8 +15,11 @@ pub struct Pointer(pub u64);
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 pub struct Timestamp(pub u64);
 
-/// Test struct for both derives
+/// Test struct for both derives. `#[montycat(crate = "crate")]` points the
+/// RuntimeSchema derive at this test crate's local `RuntimeSchema`/`Pointer`/
+/// `Timestamp` defs (defined above at the crate root) instead of `::montycat`.
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, BinaryConvert, RuntimeSchema)]
+#[montycat(crate = "crate")]
 pub struct MyStruct {
     pub id: Pointer,
     pub timestamp: Timestamp,
